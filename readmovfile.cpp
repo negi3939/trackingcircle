@@ -4,17 +4,9 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
+#include "readmovfile.h"
 
-class ReadMOVfile{
-protected:
-  std::string readfilename;
-  cv::VideoCapture video;
-  cv::Mat imag;
-public:
-  ReadMOVfile(std::string &s);
-  int getimage(cv::Mat &m);
-};
 
 ReadMOVfile::ReadMOVfile(std::string &s){
   readfilename = s;
@@ -34,6 +26,10 @@ int ReadMOVfile::getimage(cv::Mat &m){
 
 #if defined(READ_IS_MAIN)
 int main(int argh, char* argv[]){
+  if(argh<2){
+    std::cout << "error no argument" << std::endl;
+    exit(0);
+  }
   std::string st(argv[1]);
   ReadMOVfile readmv(st);
   cv::Mat m;

@@ -7,15 +7,22 @@
 ################################################################################################################################################
 TARGET=$(MAKECMDGOALS)
 ifeq ($(MAKECMDGOALS),)
-	TARGET=read
+	TARGET=hough
 endif
 ifeq ($(MAKECMDGOALS),clean)
-	TARGET=read
+	TARGET=hough
 endif
 
 ifeq ($(TARGET),read)
 	SOURCE_MAIN = readmovfile.cpp
 	CXXFLAGS = -DREAD_IS_MAIN -I /usr/include/
+	LDFLAGS += `pkg-config --cflags --libs opencv` -L /usr/lib
+endif
+
+ifeq ($(TARGET),hough)
+	SOURCE_MAIN = houghconvert.cpp
+	SOURCE_SUB = readmovfile.cpp
+	CXXFLAGS = -DHOUGH_IS_MAIN -I /usr/include/
 	LDFLAGS += `pkg-config --cflags --libs opencv` -L /usr/lib
 endif
 
