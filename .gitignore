@@ -1,0 +1,13 @@
+*.out
+*.o
+*.exe
+*.dat
+*.eps
+*.mp4
+*.MP4
+*.avi
+*.AVI
+*~
+data/*
+data/*.dat
+data/*.dat~
