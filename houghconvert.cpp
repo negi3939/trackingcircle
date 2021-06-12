@@ -84,6 +84,7 @@ int Houghconv::getpos(const cv::Mat &m,numposition &np){
 int Houghconv::judgetruecircle(){
   std::vector<Val_ID> errval;
   Val_ID vlid;
+  int ret;
   double pre_absval;
   if(circles.size()==0){return 0;}
   if(count==0){
@@ -108,8 +109,10 @@ int Houghconv::judgetruecircle(){
     std::sort(errval.begin(),errval.end());
     true_circle = circles[errval[0].id];
   }
+  if(true_circle[2]==0){return 0;}
   prev_circle = true_circle;
   count++;
+  return 1;
 }
 
 void Houghconv::drawcircle(cv::Mat &m){
