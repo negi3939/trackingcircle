@@ -63,6 +63,7 @@ void Houghconv::getpos(const cv::Mat &m){
   cv::threshold(gray,gray,100,255,cv::THRESH_BINARY);
   cv::Canny(gray, gray, 10, 100 * 2);
   HoughCircles(gray, circles, CV_HOUGH_GRADIENT,2, 1, 200, 100);
+  judgetruecircle();
 }
 
 int Houghconv::judgetruecircle(){
@@ -99,9 +100,13 @@ void Houghconv::drawcircle(cv::Mat &m){
   for(int ii=0;ii<circles.size();ii++){
     cv::Point center(cvRound(circles[ii][0]), cvRound(circles[ii][1]));
     int radius = cvRound(circles[ii][2]);
-    circle( m, center, 3, cv::Scalar(0,255,0), -1, 8, 0 );
-    circle( m, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
+    circle( m, center, 3, cv::Scalar(0,125,60), -1, 8, 0 );
+    circle( m, center, radius, cv::Scalar(60,0,125), 3, 8, 0 );
   }
+  cv::Point center(cvRound(true_circle[0]), cvRound(true_circle[1]));
+  int radius = cvRound(true_circle[2]);
+  circle( m, center, 3, cv::Scalar(0,255,0), -1, 8, 0 );
+  circle( m, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
 }
 #if defined(HOUGH_IS_MAIN)
 int main(int argh, char* argv[]){
