@@ -8,6 +8,7 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include "readmovfile.h"
+#include "filesave.h"
 
 struct Val_ID{
   double val;
@@ -17,23 +18,31 @@ struct Val_ID{
   };
 };
 
+struct numposition{
+  int num;
+  double x;
+  double y;
+  double r;
+};
+
 class Houghconv{
 protected:
   std::vector<cv::Vec3f> circles;
   cv::Vec3f true_circle;
   cv::Vec3f prev_circle;
   long count;
-  
+  int framenum;
 public:
   Houghconv();
   void filter(const cv::Mat &m,cv::Mat &out_m);
-  void getpos(const cv::Mat &m,double &x,double &y);
+  int getpos(const cv::Mat &m,numposition &np);
   int judgetruecircle();
   void drawcircle(cv::Mat &m);
 };
 
 Houghconv::Houghconv(){
   count = 0;
+  framenum=0;
 }
 
 void Houghconv::filter(const cv::Mat &m,cv::Mat &out_m){
@@ -53,7 +62,7 @@ void Houghconv::filter(const cv::Mat &m,cv::Mat &out_m){
   }
 }
 
-void Houghconv::getpos(const cv::Mat &m,double &x,double &y){
+int Houghconv::getpos(const cv::Mat &m,numposition &np){
   cv::Mat filt,gray;
   filter(m,filt);
   cv::blur(filt, filt, cv::Size(5,5));
@@ -61,7 +70,15 @@ void Houghconv::getpos(const cv::Mat &m,double &x,double &y){
   cv::threshold(gray,gray,100,255,cv::THRESH_BINARY);
   cv::Canny(gray, gray, 10, 100 * 2);
   HoughCircles(gray, circles, CV_HOUGH_GRADIENT,2, 1, 200, 100);
-  judgetruecircle();
+  int ret = judgetruecircle();
+  if(ret){
+    np.num = framenum;
+    np.x = true_circle[0];
+    np.y = true_circle[1];
+    np.r = true_circle[2];
+  }
+  framenum++;
+  return ret;
 }
 
 int Houghconv::judgetruecircle(){
@@ -92,6 +109,7 @@ int Houghconv::judgetruecircle(){
     true_circle = circles[errval[0].id];
   }
   prev_circle = true_circle;
+  count++;
 }
 
 void Houghconv::drawcircle(cv::Mat &m){
@@ -107,6 +125,17 @@ void Houghconv::drawcircle(cv::Mat &m){
   circle( m, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
 }
 
+void filesavenumpos(std::string &fst,std::vector<numposition> &np_his){
+  Filesave fs(fst);
+  for(int ii=0;ii<np_his.size();ii++){
+    fs.write_fc((double)np_his[ii].num);
+    fs.write_fc((double)np_his[ii].x);
+    fs.write_fc((double)np_his[ii].y);
+    fs.write_fn((double)np_his[ii].r);
+  }
+  std::cout << "saved file name is "<< fst << "." << std::endl;
+};
+
 
 #if defined(HOUGH_IS_MAIN)
 int main(int argh, char* argv[]){
@@ -117,6 +146,7 @@ int main(int argh, char* argv[]){
   int screen_b = 1;
   std::string st(argv[1]);
   std::string noscst("noscreen");
+ 
   if(argh>2){
     std::string optionst(argv[2]);
     if(optionst==noscst){
@@ -125,20 +155,27 @@ int main(int argh, char* argv[]){
     }
   }
   ReadMOVfile readmv(st);
+  std::string savefilename;
+  st.resize(st.size()-4);
+  savefilename = st + "_position.csv";
   cv::Mat m;
-  double x,y;
+  numposition np;
+  std::vector<numposition> np_history;
   Houghconv hough;
+  int judge_fl;
   while(1){
     if(readmv.getimage(m)==0){
       break;
     }
-    hough.getpos(m,x,y);
+    judge_fl = hough.getpos(m,np);
+    if(judge_fl){np_history.push_back(np);}
     if(screen_b){
       hough.drawcircle(m);
       cv::imshow("showing",m);
       cv::waitKey(1);
     }
   }
+  filesavenumpos(savefilename,np_history);
   return 0;
 }
 #endif
