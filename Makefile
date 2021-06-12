@@ -21,7 +21,7 @@ endif
 
 ifeq ($(TARGET),hough)
 	SOURCE_MAIN = houghconvert.cpp
-	SOURCE_SUB = readmovfile.cpp
+	SOURCE_SUB = readmovfile.cpp filesave.cpp
 	CXXFLAGS = -DHOUGH_IS_MAIN -I /usr/include/
 	LDFLAGS += `pkg-config --cflags --libs opencv` -L /usr/lib
 endif

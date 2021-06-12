@@ -17,8 +17,6 @@ struct Val_ID{
   };
 };
 
-
-
 class Houghconv{
 protected:
   std::vector<cv::Vec3f> circles;
@@ -29,7 +27,7 @@ protected:
 public:
   Houghconv();
   void filter(const cv::Mat &m,cv::Mat &out_m);
-  void getpos(const cv::Mat &m);
+  void getpos(const cv::Mat &m,double &x,double &y);
   int judgetruecircle();
   void drawcircle(cv::Mat &m);
 };
@@ -55,7 +53,7 @@ void Houghconv::filter(const cv::Mat &m,cv::Mat &out_m){
   }
 }
 
-void Houghconv::getpos(const cv::Mat &m){
+void Houghconv::getpos(const cv::Mat &m,double &x,double &y){
   cv::Mat filt,gray;
   filter(m,filt);
   cv::blur(filt, filt, cv::Size(5,5));
@@ -108,24 +106,38 @@ void Houghconv::drawcircle(cv::Mat &m){
   circle( m, center, 3, cv::Scalar(0,255,0), -1, 8, 0 );
   circle( m, center, radius, cv::Scalar(0,0,255), 3, 8, 0 );
 }
+
+
 #if defined(HOUGH_IS_MAIN)
 int main(int argh, char* argv[]){
   if(argh<2){
     std::cout << "error no argument" << std::endl;
     exit(0);
   }
+  int screen_b = 1;
   std::string st(argv[1]);
+  std::string noscst("noscreen");
+  if(argh>2){
+    std::string optionst(argv[2]);
+    if(optionst==noscst){
+      screen_b = 0;
+      std::cout << "no screen mode. now converting..." << std::endl;
+    }
+  }
   ReadMOVfile readmv(st);
   cv::Mat m;
+  double x,y;
   Houghconv hough;
   while(1){
     if(readmv.getimage(m)==0){
       break;
     }
-    hough.getpos(m);
-    hough.drawcircle(m);
-    cv::imshow("showing",m);
-    cv::waitKey(1);
+    hough.getpos(m,x,y);
+    if(screen_b){
+      hough.drawcircle(m);
+      cv::imshow("showing",m);
+      cv::waitKey(1);
+    }
   }
   return 0;
 }
