@@ -66,7 +66,7 @@ int Houghconv::getpos(const cv::Mat &m,numposition &np){
   cv::Mat filt,gray;
   filter(m,filt);
   cv::blur(filt, filt, cv::Size(5,5));
-  cvtColor(filt, gray, CV_BGR2GRAY);
+  cvtColor(filt, gray, cv::COLOR_BGR2GRAY);
   cv::threshold(gray,gray,100,255,cv::THRESH_BINARY);
   cv::Canny(gray, gray, 10, 100 * 2);
   HoughCircles(gray, circles, CV_HOUGH_GRADIENT,2, 1, 200, 100);
