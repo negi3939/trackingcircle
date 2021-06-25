@@ -45,6 +45,7 @@ Houghconv::Houghconv(){
   framenum=0;
 }
 
+
 void Houghconv::filter(const cv::Mat &m,cv::Mat &out_m){
   out_m = m.clone();
   for(int ii = 0; ii<m.rows;ii++){
@@ -147,25 +148,56 @@ int main(int argh, char* argv[]){
     exit(0);
   }
   int screen_b = 1;
+  int save_b = 0;
   std::string st(argv[1]);
   std::string noscst("noscreen");
+  std::string noscst2("-N");
+  std::string smscst("savemovie");
+  std::string smscst2("-s");
+  std::string smnoscst("-sN");
+  std::string smnoscst2("-Ns");
  
   if(argh>2){
-    std::string optionst(argv[2]);
-    if(optionst==noscst){
-      screen_b = 0;
-      std::cout << "no screen mode. now converting..." << std::endl;
+    for(int ii=0;ii<argh-2;ii++){
+      std::string optionst(argv[2+ii]);
+      if((optionst==noscst)||(optionst==noscst2)){
+        screen_b = 0;
+        std::cout << "no screen mode. now converting..." << std::endl;
+      }
+      if((optionst==smscst)||(optionst==smscst2)){
+        save_b = 1;
+        std::cout << "save mp4 file later..." << std::endl;
+      }
+      if((optionst==smnoscst)||(optionst==smnoscst2)){
+        screen_b = 0;
+        std::cout << "no screen mode. now converting..." << std::endl;
+        save_b = 1;
+        std::cout << "save mp4 file later..." << std::endl;
+      }
     }
   }
   ReadMOVfile readmv(st);
   std::string savefilename;
   st.resize(st.size()-4);
   savefilename = st + "_position.csv";
+  std::string savemovfilename;
+  savemovfilename = st + "_position.mp4";
+  cv::VideoWriter writer;
+  int width,height,fourcc;
+  double fps;
+  if(save_b == 1){
+    readmv.getinfo(width,height,fps);
+    fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+    writer.open(savemovfilename, fourcc, fps, cv::Size(width, height));
+  }
   cv::Mat m;
   numposition np;
   std::vector<numposition> np_history;
   Houghconv hough;
   int judge_fl;
+  
+  
+
   while(1){
     if(readmv.getimage(m)==0){
       break;
@@ -176,6 +208,9 @@ int main(int argh, char* argv[]){
       hough.drawcircle(m);
       cv::imshow("showing",m);
       cv::waitKey(1);
+    }
+    if(save_b == 1){
+      writer << m;
     }
   }
   filesavenumpos(savefilename,np_history);

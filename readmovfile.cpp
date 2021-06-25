@@ -15,6 +15,9 @@ ReadMOVfile::ReadMOVfile(std::string &s){
     std::cout << "Cannot open "<< readfilename << ". Check file name." << std::endl;
     return;
   }
+  width  = (int)video.get(cv::CAP_PROP_FRAME_WIDTH);
+	height = (int)video.get(cv::CAP_PROP_FRAME_HEIGHT);
+	fps    = video.get(cv::CAP_PROP_FPS);
 }
 
 int ReadMOVfile::getimage(cv::Mat &m){
@@ -22,6 +25,12 @@ int ReadMOVfile::getimage(cv::Mat &m){
   if(imag.empty() == true){return 0;}
   m = imag;
   return 1;
+}
+
+int ReadMOVfile::getinfo(int &l_width, int &l_height, double &l_fps){
+  l_width = width;
+  l_height = height;
+  l_fps = fps;
 }
 
 #if defined(READ_IS_MAIN)
