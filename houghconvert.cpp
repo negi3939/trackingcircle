@@ -32,10 +32,12 @@ protected:
   cv::Vec3f prev_circle;
   long count;
   int framenum;
+  cv::Mat filt,gray,binary,lineonly;
 public:
   Houghconv();
   void filter(const cv::Mat &m,cv::Mat &out_m);
   int getpos(const cv::Mat &m,numposition &np);
+  int getpos(const cv::Mat &m,cv::Mat &l_filt,cv::Mat &l_gray,cv::Mat &l_binary,cv::Mat &l_lineonly,numposition &np);
   int judgetruecircle();
   void drawcircle(cv::Mat &m);
 };
@@ -64,13 +66,12 @@ void Houghconv::filter(const cv::Mat &m,cv::Mat &out_m){
 }
 
 int Houghconv::getpos(const cv::Mat &m,numposition &np){
-  cv::Mat filt,gray;
   filter(m,filt);
   cv::blur(filt, filt, cv::Size(5,5));
   cvtColor(filt, gray, cv::COLOR_BGR2GRAY);
-  cv::threshold(gray,gray,100,255,cv::THRESH_BINARY);
-  cv::Canny(gray, gray, 10, 100 * 2);
-  HoughCircles(gray, circles, CV_HOUGH_GRADIENT,2, 1, 200, 100);
+  cv::threshold(gray,binary,100,255,cv::THRESH_BINARY);
+  cv::Canny(binary, lineonly, 10, 100 * 2);
+  HoughCircles(lineonly, circles, CV_HOUGH_GRADIENT,2, 1, 200, 100);
   int ret = judgetruecircle();
   if(ret){
     np.num = framenum;
@@ -79,6 +80,29 @@ int Houghconv::getpos(const cv::Mat &m,numposition &np){
     np.r = true_circle[2];
   }
   framenum++;
+  return ret;
+}
+
+
+int Houghconv::getpos(const cv::Mat &m,cv::Mat &l_filt,cv::Mat &l_gray,cv::Mat &l_binary,cv::Mat &l_lineonly,numposition &np){
+  filter(m,filt);
+  cv::blur(filt, gray, cv::Size(5,5));
+  cvtColor(gray, gray, cv::COLOR_BGR2GRAY);
+  cv::threshold(gray,binary,100,255,cv::THRESH_BINARY);
+  cv::Canny(binary, lineonly, 10, 100 * 2);
+  HoughCircles(lineonly, circles, CV_HOUGH_GRADIENT,2, 1, 200, 100);
+  int ret = judgetruecircle();
+  if(ret){
+    np.num = framenum;
+    np.x = true_circle[0];
+    np.y = true_circle[1];
+    np.r = true_circle[2];
+  }
+  framenum++;
+  l_filt=filt;
+  l_gray=gray;
+  l_binary=binary;
+  l_lineonly=lineonly;
   return ret;
 }
 
@@ -190,7 +214,7 @@ int main(int argh, char* argv[]){
     fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
     writer.open(savemovfilename, fourcc, fps, cv::Size(width, height));
   }
-  cv::Mat m;
+  cv::Mat m,l_filt,l_gray,l_binary,l_lineonly;
   numposition np;
   std::vector<numposition> np_history;
   Houghconv hough;
@@ -202,11 +226,19 @@ int main(int argh, char* argv[]){
     if(readmv.getimage(m)==0){
       break;
     }
-    judge_fl = hough.getpos(m,np);
+    judge_fl = hough.getpos(m,l_filt,l_gray,l_binary,l_lineonly,np);
     if(judge_fl){np_history.push_back(np);}
     if(screen_b){
       hough.drawcircle(m);
       cv::imshow("showing",m);
+      cv::waitKey(1);
+      cv::imshow("filt",l_filt);
+      cv::waitKey(1);
+      cv::imshow("gray",l_gray);
+      cv::waitKey(1);
+      cv::imshow("binary",l_binary);
+      cv::waitKey(1);
+      cv::imshow("line",l_lineonly);
       cv::waitKey(1);
     }
     if(save_b == 1){
