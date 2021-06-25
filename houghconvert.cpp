@@ -238,7 +238,7 @@ int main(int argh, char* argv[]){
       cv::waitKey(1);
       cv::imshow("line",l_lineonly);
       cv::waitKey(1);
-      cv::imshow("showing",m);
+      cv::imshow("show ouput",m);
       cv::waitKey(1);
     }
     if(save_b == 1){
