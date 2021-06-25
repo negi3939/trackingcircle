@@ -230,8 +230,6 @@ int main(int argh, char* argv[]){
     if(judge_fl){np_history.push_back(np);}
     if(screen_b){
       hough.drawcircle(m);
-      cv::imshow("showing",m);
-      cv::waitKey(1);
       cv::imshow("filt",l_filt);
       cv::waitKey(1);
       cv::imshow("gray",l_gray);
@@ -239,6 +237,8 @@ int main(int argh, char* argv[]){
       cv::imshow("binary",l_binary);
       cv::waitKey(1);
       cv::imshow("line",l_lineonly);
+      cv::waitKey(1);
+      cv::imshow("showing",m);
       cv::waitKey(1);
     }
     if(save_b == 1){
